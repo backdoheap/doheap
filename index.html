@@ -35,14 +35,14 @@
     .noti-title { font-weight: bold; font-size: 13px; color: #fff; }
     .noti-body { font-size: 13px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* 화면 스위칭 */
-    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; }
-    .screen.active { display: block; }
+    /* 화면 스위칭 시스템 */
+    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; z-index: 10; }
+    .screen.active { display: flex; flex-direction: column; z-index: 20; }
 
     /* 1. 잠금 화면 */
     #lock-screen {
       background: linear-gradient(180deg, #1c2a38 0%, #000 100%);
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 50px;
+      justify-content: space-between; align-items: center; padding-bottom: 50px;
     }
     .lock-time { margin-top: 50px; text-align: center; }
     .lock-time h1 { font-size: 72px; font-weight: 200; }
@@ -54,7 +54,7 @@
 
     /* 2. 홈 화면 */
     #home-screen { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); padding: 60px 20px 20px; }
-    .owner-tag { text-align: center; margin-bottom: 25px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 12px; display: inline-block; }
+    .owner-tag { text-align: center; margin-bottom: 25px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 12px; display: inline-block; width: 100%; }
     .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 15px; justify-items: center; }
     .app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration: none; color: #fff; }
     .app-box { width: 58px; height: 58px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 26px; position: relative; }
@@ -71,26 +71,26 @@
     .badge { position: absolute; top: -3px; right: -3px; background: #FF3B30; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: bold; }
 
     /* 공통 헤더 */
-    .app-header { height: 44px; background: #1c1c1e; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; }
+    .app-header { height: 44px; background: #1c1c1e; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; flex-shrink: 0; }
     .back-btn { color: #0A84FF; cursor: pointer; font-size: 15px; font-weight: 500; }
 
     /* 3. 메모장 */
-    #notes-screen { background: #1c1c1e; }
+    #notes-screen { background: #1c1c1e; overflow-y: auto; }
     .note-item { padding: 15px; border-bottom: 1px solid #333; }
     .note-title { font-weight: bold; font-size: 15px; margin-bottom: 5px; color: #FFD60A; }
     .note-body { font-size: 13px; white-space: pre-line; color: #ddd; line-height: 1.5; }
 
     /* 4. 사진 앨범 (15장) */
-    #photos-screen { background: #000; height: 100%; overflow-y: auto; }
+    #photos-screen { background: #000; overflow-y: auto; }
     .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 5px 0 40px; }
     .album-item { width: 100%; height: 120px; background: #222; }
     .album-item img { width: 100%; height: 100%; object-fit: cover; }
 
     /* 5. 인스타그램 홈 */
-    #insta-screen { background: #000; height: 100%; display: flex; flex-direction: column; }
-    .insta-nav { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #222; }
+    #insta-screen { background: #000; overflow-y: auto; }
+    .insta-nav { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #222; flex-shrink: 0; }
     .insta-logo { font-weight: bold; font-size: 18px; font-family: sans-serif; }
-    .insta-stories { display: flex; gap: 15px; padding: 10px 15px; border-bottom: 1px solid #222; overflow-x: auto; }
+    .insta-stories { display: flex; gap: 15px; padding: 10px 15px; border-bottom: 1px solid #222; overflow-x: auto; flex-shrink: 0; }
     .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
     .story-ring { width: 56px; height: 56px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
     .story-ring img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #000; object-fit: cover; }
@@ -106,11 +106,11 @@
     .post-caption { padding: 10px; font-size: 12px; line-height: 1.4; }
 
     /* 인스타 스토리 팝업 뷰어 */
-    #story-viewer { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; flex-direction:column; }
+    #story-viewer { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:20000; flex-direction:column; }
     #story-viewer img { width:100%; height: calc(100% - 60px); object-fit: cover; margin-top: 20px; }
 
     /* 인스타 디엠 화면 */
-    #insta-dm-screen { background: #000; height: 100%; display: flex; flex-direction: column; }
+    #insta-dm-screen { background: #000; }
 
     /* 공통 채팅 메신저 스타일 */
     .chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #000; }
@@ -125,8 +125,8 @@
     .typing-indicator { font-size: 11px; color: #888; font-style: italic; padding: 4px 8px; }
 
     /* Meeting 앱 */
-    #meeting-screen { background: #121212; height: 100%; display: flex; flex-direction: column; }
-    .meeting-header { padding: 12px; background: #1e1e1e; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; }
+    #meeting-screen { background: #121212; }
+    .meeting-header { padding: 12px; background: #1e1e1e; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; flex-shrink: 0; }
     .meeting-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
     .meeting-info h4 { font-size: 14px; color: #ff007f; }
     .meeting-info p { font-size: 11px; color: #aaa; }
@@ -161,7 +161,7 @@
 
   <!-- 2. 홈화면 -->
   <div id="home-screen" class="screen">
-    <div style="text-align: center;"><span class="owner-tag">📱 한지훈의 iPhone</span></div>
+    <span class="owner-tag">📱 한지훈의 iPhone</span>
     <div class="app-grid">
       <div class="app-icon" onclick="showScreen('kakaotalk-screen')">
         <div class="app-box app-kakaotalk">💬<span class="badge" id="ktalk-badge" style="display:none;">1</span></div>
@@ -209,11 +209,11 @@ ambiguous - 모호한</div>
     </div>
   </div>
 
-  <!-- 4. 사진첩 (15장 기본 렌더링) -->
+  <!-- 4. 사진첩 (15장) -->
   <div id="photos-screen" class="screen">
     <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; font-weight:bold;">사진첩 (15)</span></div>
     <div class="album-grid">
-      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-d1b0ff7c-fa90-462e-b306-ef1f0df8b9f7.jpg" alt="사진1"></div>
+      <div class="album-item"><img src="https://picsum.photos/200/200?random=1" alt="사진1"></div>
       <div class="album-item"><img src="https://picsum.photos/200/200?random=2" alt="사진2"></div>
       <div class="album-item"><img src="https://picsum.photos/200/200?random=3" alt="사진3"></div>
       <div class="album-item"><img src="https://picsum.photos/200/200?random=4" alt="사진4"></div>
@@ -247,10 +247,9 @@ ambiguous - 모호한</div>
       </div>
     </div>
     <div class="insta-feed">
-      <!-- 게시물 1: 한지성 (3장) -->
       <div class="post">
         <div class="post-header">
-          <img src="https://cdn.phototourl.com/member/2026-11-01-9a5ed29e-da22-4bc4-b06f-9d2df3efce4c.jpg">
+          <img src="https://picsum.photos/40/40?random=101">
           <span>han_js (한지성)</span>
         </div>
         <div class="post-imgs">
@@ -258,9 +257,8 @@ ambiguous - 모호한</div>
           <img src="https://picsum.photos/400/300?random=202">
           <img src="https://picsum.photos/400/300?random=203">
         </div>
-        <div class="post-caption"><b>han_js</b> 주말 휴식 📸 (옆으로 스와이프 3장)</div>
+        <div class="post-caption"><b>han_js</b> 주말 휴식 📸</div>
       </div>
-      <!-- 게시물 2: 한지훈 (2장) -->
       <div class="post">
         <div class="post-header">
           <img src="https://picsum.photos/40/40?random=102">
@@ -270,7 +268,7 @@ ambiguous - 모호한</div>
           <img src="https://picsum.photos/400/300?random=301">
           <img src="https://picsum.photos/400/300?random=302">
         </div>
-        <div class="post-caption"><b>jihoon_h</b> 일상 기록. (2장)</div>
+        <div class="post-caption"><b>jihoon_h</b> 일상 기록.</div>
       </div>
     </div>
   </div>
@@ -278,7 +276,7 @@ ambiguous - 모호한</div>
   <!-- 인스타 스토리 팝업 -->
   <div id="story-viewer">
     <div class="app-header"><span class="back-btn" onclick="closeStory()">✕ 닫기</span><span style="margin-left:15px;">han_js의 스토리</span></div>
-    <img id="hanjs-story-img" src="https://cdn.phototourl.com/member/2026-11-01-2819dd36-8e42-42c0-a583-57de3539adda.jpg" alt="한지성 스토리">
+    <img id="hanjs-story-img" src="https://cdn.phototourl.com/member/2026-11-01-c8c41f1e-61eb-48b4-80be-ffe8b9a8b9ed.jpg" alt="한지성 스토리">
   </div>
 
   <!-- 6. 인스타 디엠 화면 -->
@@ -296,17 +294,17 @@ ambiguous - 모호한</div>
   <div id="kakaotalk-screen" class="screen">
     <div class="app-header">
       <span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span>
-      <img id="dohoon-pfp" src="https://via.placeholder.com/30/ff8b94/fff?text=%EB%8F%84%ED%9B%88" style="width:28px; height:28px; border-radius:50%; margin-left:10px;">
+      <img id="dohoon-pfp" src="https://cdn.phototourl.com/member/2026-11-01-d1b0ff7c-fa90-462e-b306-ef1f0df8b9f7.jpg" style="width:28px; height:28px; border-radius:50%; margin-left:10px;">
       <span style="margin-left:8px; font-weight:bold; color:#000;">김도훈</span>
     </div>
     <div class="chat-box kakao-chat" id="ktalk-chat-box"></div>
   </div>
 
-  <!-- 8. Meeting 게이 만남 어플 화면 -->
+  <!-- 8. Meeting 어플 화면 -->
   <div id="meeting-screen" class="screen">
     <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; color:#ff007f; font-weight:bold;">Meeting</span></div>
     <div class="meeting-header">
-      <img id="icarus-pfp" src="https://cdn.phototourl.com/member/2026-11-01-e737c475-c35c-49a8-8848-186297426230.jpg" alt="이카루스">
+      <img id="icarus-pfp" src="https://cdn.phototourl.com/member/2026-11-01-9a5ed29e-da22-4bc4-b06f-9d2df3efce4c.jpg" alt="이카루스">
       <div class="meeting-info">
         <h4>이카루스</h4>
         <p>24세 / 181cm / 탑(Top)</p>
