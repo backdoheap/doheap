@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한지훈의 iPhone</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif; user-select: none; }
+    body { background-color: #121212; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #fff; }
+
+    /* 아이폰 프레임 */
+    .iphone-device {
+      width: 375px; height: 812px; background: #000; border-radius: 48px;
+      position: relative; border: 10px solid #2d2d2d; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+    .notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 150px; height: 28px; background: #000; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 9999;
+    }
+    .status-bar {
+      position: absolute; top: 0; width: 100%; height: 44px; display: flex; justify-content: space-between;
+      align-items: center; padding: 0 24px; font-size: 13px; font-weight: 600; z-index: 9998; background: rgba(0,0,0,0.2);
+    }
+
+    /* 푸시 알림 팝업 */
+    .notification {
+      position: absolute; top: -100px; left: 12px; right: 12px; background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(15px); border-radius: 16px; padding: 12px 16px; z-index: 10000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer; transition: all 0.5s ease;
+      border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 4px;
+    }
+    .notification.show { top: 50px; }
+    .noti-header { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; }
+    .noti-title { font-weight: bold; font-size: 13px; color: #fff; }
+    .noti-body { font-size: 13px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 화면 스위칭 */
+    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; }
+    .screen.active { display: block; }
+
+    /* 1. 잠금 화면 */
+    #lock-screen {
+      background: linear-gradient(180deg, #1c2a38 0%, #000 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 50px;
+    }
+    .lock-time { margin-top: 50px; text-align: center; }
+    .lock-time h1 { font-size: 72px; font-weight: 200; }
+    .lock-time p { font-size: 18px; opacity: 0.8; }
+    .unlock-btn {
+      background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+      padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 14px; animation: bounce 2s infinite;
+    }
+
+    /* 2. 홈 화면 */
+    #home-screen { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); padding: 60px 20px 20px; }
+    .owner-tag { text-align: center; margin-bottom: 25px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 12px; display: inline-block; }
+    .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 15px; justify-items: center; }
+    .app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration: none; color: #fff; }
+    .app-box { width: 58px; height: 58px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 26px; position: relative; }
+    .app-name { font-size: 11px; margin-top: 6px; text-align: center; }
+    
+    .app-kakaotalk { background: #FEE500; color: #000; }
+    .app-instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); }
+    .app-photos { background: #fff; color: #000; }
+    .app-phone { background: #34C759; }
+    .app-notes { background: #FFCC00; color: #000; }
+    .app-messages { background: #34C759; }
+    .app-meeting { background: linear-gradient(45deg, #ff007f, #7f00ff); font-weight: bold; font-size: 13px; }
+    
+    .badge { position: absolute; top: -3px; right: -3px; background: #FF3B30; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: bold; }
+
+    /* 공통 헤더 */
+    .app-header { height: 44px; background: #1c1c1e; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; }
+    .back-btn { color: #0A84FF; cursor: pointer; font-size: 15px; font-weight: 500; }
+
+    /* 3. 메모장 */
+    #notes-screen { background: #1c1c1e; }
+    .note-item { padding: 15px; border-bottom: 1px solid #333; }
+    .note-title { font-weight: bold; font-size: 15px; margin-bottom: 5px; color: #FFD60A; }
+    .note-body { font-size: 13px; white-space: pre-line; color: #ddd; line-height: 1.5; }
+
+    /* 4. 사진 앨범 (15장) */
+    #photos-screen { background: #000; height: 100%; overflow-y: auto; }
+    .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 5px 0 40px; }
+    .album-item { width: 100%; height: 120px; background: #222; }
+    .album-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* 5. 인스타그램 */
+    #insta-screen { background: #000; height: 100%; display: flex; flex-direction: column; }
+    .insta-nav { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #222; }
+    .insta-logo { font-weight: bold; font-size: 18px; font-family: sans-serif; }
+    .insta-stories { display: flex; gap: 15px; padding: 10px 15px; border-bottom: 1px solid #222; overflow-x: auto; }
+    .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .story-ring { width: 56px; height: 56px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .story-ring img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #000; object-fit: cover; }
+    .story-name { font-size: 10px; margin-top: 4px; color: #ccc; }
+    
+    .insta-feed { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+    .post { border-bottom: 1px solid #222; margin-bottom: 15px; }
+    .post-header { display: flex; align-items: center; padding: 10px; gap: 10px; }
+    .post-header img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .post-header span { font-size: 12px; font-weight: 600; }
+    .post-imgs { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+    .post-imgs img { width: 100%; height: 300px; flex-shrink: 0; object-fit: cover; scroll-snap-align: start; }
+    .post-caption { padding: 10px; font-size: 12px; line-height: 1.4; }
+
+    /* 인스타 스토리 팝업 뷰어 */
+    #story-viewer { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; flex-direction:column; }
+    #story-viewer img { width:100%; height: calc(100% - 60px); object-fit: cover; margin-top: 20px; }
+
+    /* 인스타 디엠 화면 */
+    #insta-dm-screen { background: #000; height: 100%; display: flex; flex-direction: column; }
+
+    /* 공통 채팅 메신저 스타일 */
+    .chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #000; }
+    .msg { max-width: 70%; padding: 8px 12px; border-radius: 16px; font-size: 13px; line-height: 1.4; word-break: break-all; }
+    .msg.recv { background: #262626; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.send { background: #3797F0; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    
+    .kakao-chat { background: #abc1d1; }
+    .kakao-chat .msg.recv { background: #fff; color: #000; border-bottom-left-radius: 2px; }
+    .kakao-chat .msg.send { background: #FEE500; color: #000; border-bottom-right-radius: 2px; }
+
+    .typing-indicator { font-size: 11px; color: #888; font-style: italic; padding: 4px 8px; }
+
+    /* Meeting 앱 */
+    #meeting-screen { background: #121212; height: 100%; display: flex; flex-direction: column; }
+    .meeting-header { padding: 12px; background: #1e1e1e; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; }
+    .meeting-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+    .meeting-info h4 { font-size: 14px; color: #ff007f; }
+    .meeting-info p { font-size: 11px; color: #aaa; }
+
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  </style>
+</head>
+<body>
+
+<div class="iphone-device">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>12:20</span>
+    <span>5G 🔋</span>
+  </div>
+
+  <!-- 푸시 알림 창 -->
+  <div id="push-noti" class="notification" onclick="handleNotificationClick()">
+    <div class="noti-header"><span id="noti-app-name">카카오톡</span><span>방금 전</span></div>
+    <div class="noti-title" id="noti-sender">김도훈</div>
+    <div class="noti-body" id="noti-text">알림 내용이 들어갑니다.</div>
+  </div>
+
+  <!-- 1. 잠금화면 -->
+  <div id="lock-screen" class="screen active">
+    <div class="lock-time">
+      <p>11월 1일 일요일</p>
+      <h1>12:20</h1>
+    </div>
+    <div class="unlock-btn" onclick="showScreen('home-screen')">스와이프하여 열기</div>
+  </div>
+
+  <!-- 2. 홈화면 -->
+  <div id="home-screen" class="screen">
+    <div style="text-align: center;"><span class="owner-tag">📱 한지훈의 iPhone</span></div>
+    <div class="app-grid">
+      <div class="app-icon" onclick="showScreen('kakaotalk-screen')">
+        <div class="app-box app-kakaotalk">💬<span class="badge" id="ktalk-badge" style="display:none;">1</span></div>
+        <span class="app-name">카카오톡</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('insta-screen')">
+        <div class="app-box app-instagram">📸</div>
+        <span class="app-name">Instagram</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('photos-screen')">
+        <div class="app-box app-photos">🖼️</div>
+        <span class="app-name">사진첩</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('notes-screen')">
+        <div class="app-box app-notes">📝</div>
+        <span class="app-name">메모</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('meeting-screen')">
+        <div class="app-box app-meeting">🔥<span class="badge" id="meeting-badge" style="display:none;">1</span></div>
+        <span class="app-name">Meeting</span>
+      </div>
+      <div class="app-icon"><div class="app-box app-phone">📞</div><span class="app-name">전화</span></div>
+      <div class="app-icon"><div class="app-box app-messages">💬</div><span class="app-name">메시지</span></div>
+    </div>
+  </div>
+
+  <!-- 3. 메모장 -->
+  <div id="notes-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px;">메모장</span></div>
+    <div class="note-item">
+      <div class="note-title">🛒 장보기 목록</div>
+      <div class="note-body">건면 칼국수!!!
+라라스윗 초코맛!!!</div>
+    </div>
+    <div class="note-item">
+      <div class="note-title">📌 일정</div>
+      <div class="note-body">11월 1일 환승연애 보기</div>
+    </div>
+    <div class="note-item">
+      <div class="note-title">🔤 영어 단어</div>
+      <div class="note-body">abandon - 포기하다
+vulnerable - 취약한
+unprecedented - 전례 없는
+ambiguous - 모호한</div>
+    </div>
+  </div>
+
+  <!-- 4. 사진첩 (15장 기본 렌더링) -->
+  <div id="photos-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; font-weight:bold;">사진첩 (15)</span></div>
+    <div class="album-grid">
+      <!-- 📌 아래 src="주소" 부분을 원하는 파일명/이미지 링크로 수정할 수 있습니다. -->
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-2819dd36-8e42-42c0-a583-57de3539adda.jpg" alt="사진1"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-c8c41f1e-61eb-48b4-80be-ffe8b9a8b9ed.jpg" alt="사진2"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-e737c475-c35c-49a8-8848-186297426230.jpg" alt="사진3"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-a906792e-2eab-4c15-a79b-b6e5dbcac644.jpg" alt="사진4"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-cb59832c-2fe1-40c5-a3d6-2ddbb0c39fed.jpg" alt="사진5"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-9a5ed29e-da22-4bc4-b06f-9d2df3efce4c.jpg" alt="사진6"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-eb9f7c45-2fec-4b08-a601-f768156ff63d.jpg" alt="사진7"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-841a3272-a7f2-407d-bb13-ce71f271b95e.jpg" alt="사진8"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-14185ce4-4a13-4afd-8a1b-9e02bac0dbf4.jpg" alt="사진9"></div>
+      <div class="album-item"><img src="https://cdn.phototourl.com/member/2026-11-01-d1b0ff7c-fa90-462e-b306-ef1f0df8b9f7.jpg" alt="사진10"></div>
+      <div class="album-item"><img src="https://picsum.photos/200/200?random=11" alt="사진11"></div>
+      <div class="album-item"><img src="https://picsum.photos/200/200?random=12" alt="사진12"></div>
+      <div class="album-item"><img src="https://picsum.photos/200/200?random=13" alt="사진13"></div>
+      <div class="album-item"><img src="https://picsum.photos/200/200?random=14" alt="사진14"></div>
+      <div class="album-item"><img src="https://picsum.photos/200/200?random=15" alt="사진15"></div>
+    </div>
+  </div>
+
+  <!-- 5. 인스타그램 홈 -->
+  <div id="insta-screen" class="screen">
+    <div class="insta-nav">
+      <span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span>
+      <span class="insta-logo">Instagram</span>
+      <span style="font-size: 20px; cursor: pointer;" onclick="showScreen('insta-dm-screen')">✈️</span>
+    </div>
+    <div class="insta-stories">
+      <div class="story-item" onclick="openStory()">
+        <div class="story-ring">
+          <!-- 📌 한지성 프로필 이미지 -->
+          <img src="https://picsum.photos/60/60?random=101" alt="한지성">
+        </div>
+        <span class="story-name">han_js</span>
+      </div>
+    </div>
+    <div class="insta-feed">
+      <!-- 게시물 1: 한지성 (3장) -->
+      <div class="post">
+        <div class="post-header">
+          <img src="https://picsum.photos/40/40?random=101">
+          <span>han_js (한지성)</span>
+        </div>
+        <div class="post-imgs">
+          <img src="https://picsum.photos/400/300?random=201">
+          <img src="https://picsum.photos/400/300?random=202">
+          <img src="https://picsum.photos/400/300?random=203">
+        </div>
+        <div class="post-caption"><b>han_js</b> 주말 휴식 📸 (옆으로 스와이프 3장)</div>
+      </div>
+      <!-- 게시물 2: 한지훈 (2장) -->
+      <div class="post">
+        <div class="post-header">
+          <img src="https://picsum.photos/40/40?random=102">
+          <span>jihoon_h (한지훈)</span>
+        </div>
+        <div class="post-imgs">
+          <img src="https://picsum.photos/400/300?random=301">
+          <img src="https://picsum.photos/400/300?random=302">
+        </div>
+        <div class="post-caption"><b>jihoon_h</b> 일상 기록. (2장)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 인스타 스토리 팝업 -->
+  <div id="story-viewer">
+    <div class="app-header"><span class="back-btn" onclick="closeStory()">✕ 닫기</span><span style="margin-left:15px;">han_js의 스토리</span></div>
+    <!-- 📌 [사진 첨부 위치 1] 한지성 스토리 사진 -->
+    <img id="hanjs-story-img" src="https://via.placeholder.com/350x500/d6249f/fff?text=%ED%95%9C%EC%A7%80%EC%84%B1+%EC%8A%A4%ED%86%A0%EB%A6%AC+%EC%82%AC%EC%A7%84" alt="한지성 스토리">
+  </div>
+
+  <!-- 6. 인스타 디엠 화면 -->
+  <div id="insta-dm-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('insta-screen')">❮ 인스타</span><span style="margin-left:15px; font-weight:bold;">han_js</span></div>
+    <div class="chat-box" id="insta-dm-box">
+      <!-- 기존 디엠 내역 -->
+      <div class="msg send">ㅇㄷ</div>
+      <div class="msg recv">나 지금 친구 집</div>
+      <div class="msg send">또 여친 집에서 자고 오겠네예</div>
+      <div class="msg recv">쉿</div>
+    </div>
+  </div>
+
+  <!-- 7. 카카오톡 화면 -->
+  <div id="kakaotalk-screen" class="screen">
+    <div class="app-header">
+      <span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span>
+      <!-- 📌 [사진 첨부 위치 2] 김도훈 카카오톡 프사 -->
+      <img id="dohoon-pfp" src="https://via.placeholder.com/30/ff8b94/fff?text=%EB%8F%84%ED%9B%88" style="width:28px; height:28px; border-radius:50%; margin-left:10px;">
+      <span style="margin-left:8px; font-weight:bold; color:#000;">김도훈</span>
+    </div>
+    <div class="chat-box kakao-chat" id="ktalk-chat-box">
+      <!-- 대화 내용 실시간 누적 생성 영역 -->
+    </div>
+  </div>
+
+  <!-- 8. Meeting 게이 만남 어플 화면 -->
+  <div id="meeting-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; color:#ff007f; font-weight:bold;">Meeting</span></div>
+    <div class="meeting-header">
+      <!-- 📌 [사진 첨부 위치 3] 이카루스 프사 -->
+      <img id="icarus-pfp" src="https://via.placeholder.com/45/7f00ff/fff?text=%EC%9D%B4%EC%B9%B4%EB%A3%88%EC%8A%A4" alt="이카루스">
+      <div class="meeting-info">
+        <h4>이카루스</h4>
+        <p>24세 / 181cm / 탑(Top)</p>
+      </div>
+    </div>
+    <div class="chat-box" id="meeting-chat-box" style="background: #121212;">
+      <!-- Meeting 실시간 대화 영역 -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let targetScreenOnNoti = '';
+
+  function showScreen(screenId) {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+
+    // 디엠창 첫 진입 시 타이핑 스토리 자동 시작
+    if(screenId === 'insta-dm-screen' && !window.dmStarted) {
+      window.dmStarted = true;
+      startInstaDMSequence();
+    }
+  }
+
+  function openStory() {
+    document.getElementById('story-viewer').style.display = 'flex';
+  }
+  function closeStory() {
+    document.getElementById('story-viewer').style.display = 'none';
+  }
+
+  function triggerPushNotification(appName, sender, text, targetScreen) {
+    document.getElementById('noti-app-name').innerText = appName;
+    document.getElementById('noti-sender').innerText = sender;
+    document.getElementById('noti-text').innerText = text;
+    targetScreenOnNoti = targetScreen;
+
+    const noti = document.getElementById('push-noti');
+    noti.classList.add('show');
+
+    // 앱 배지 표시
+    if(appName === '카카오톡') document.getElementById('ktalk-badge').style.display = 'block';
+    if(appName === 'Meeting') document.getElementById('meeting-badge').style.display = 'block';
+
+    setTimeout(() => { noti.classList.remove('show'); }, 4000);
+  }
+
+  function handleNotificationClick() {
+    if(targetScreenOnNoti) {
+      showScreen(targetScreenOnNoti);
+      document.getElementById('push-noti').classList.remove('show');
+    }
+  }
+
+  /* 딜레이 유틸리티 */
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+  /* 1. 인스타 디엠 대화 시퀀스 (20초 후 시작 및 입력중 애니메이션) */
+  async function startInstaDMSequence() {
+    const dmBox = document.getElementById('insta-dm-box');
+    
+    await sleep(20000); // 20초 대기 후 한지성 대화 재개
+
+    const conversation = [
+      { sender: 'recv', text: '야 한지훈', name: '한지성' },
+      { sender: 'send', text: 'ㅇㅇ', name: '한지훈' },
+      { sender: 'recv', text: '너 혹시 니 초6때 만난 김도훈 기억하냐', name: '한지성' },
+      { sender: 'send', text: '그 피부 까만 잘생긴 형?', name: '한지훈' },
+      { sender: 'recv', text: '언제는 못생겼다더니', name: '한지성' },
+      { sender: 'send', text: '암튼 그 형 왜', name: '한지훈' },
+      { sender: 'recv', text: '김도훈이 나 얼마전에 너랑 강남 간 거 스토리 올렸잖', name: '한지성' },
+      { sender: 'recv', text: '그거 보고 김도훈이 너 왤케 컸냐면서 같이 나중에 술 한 잔 하자는데', name: '한지성' },
+      { sender: 'recv', text: 'ㅇㄸ 김도훈이 사 준대.', name: '한지성' },
+      { sender: 'send', text: 'ㄴㄴㄴㄴㄴㄴㄴㄴ 절대 안 돼', name: '한지훈' },
+      { sender: 'send', text: '절대 네버 싫어', name: '한지훈' },
+      { sender: 'send', text: '진짜 싫어 나 술 못 마신다 그래 얼른', name: '한지훈' },
+      { sender: 'recv', text: '지훈아, 형이 그렇게 싫어?', name: '한지성' }
+    ];
+
+    for (let msg of conversation) {
+      // 입력 중 표시 연출
+      const typing = document.createElement('div');
+      typing.className = 'typing-indicator';
+      typing.innerText = `${msg.name}님이 입력 중...`;
+      dmBox.appendChild(typing);
+      dmBox.scrollTop = dmBox.scrollHeight;
+
+      await sleep(1500); // 입력 시간 대기
+      typing.remove();
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${msg.sender}`;
+      msgDiv.innerText = msg.text;
+      dmBox.appendChild(msgDiv);
+      dmBox.scrollTop = dmBox.scrollHeight;
+
+      await sleep(1000);
+    }
+
+    /* 2. 5초 뒤 김도훈 카카오톡 첫 알림 연출 */
+    await sleep(5000);
+    triggerPushNotification('카카오톡', '김도훈', '지훈아아', 'kakaotalk-screen');
+    startKakaoTalkSequence();
+  }
+
+  /* 카카오톡 대화 진행 시퀀스 */
+  async function startKakaoTalkSequence() {
+    const ktalkBox = document.getElementById('ktalk-chat-box');
+    const firstMsgs = ['지훈아아', '나 도훈이 형이야.', '못 본 새에 많이 컸네~'];
+
+    for(let text of firstMsgs) {
+      await sleep(1500);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg recv';
+      msgDiv.innerText = text;
+      ktalkBox.appendChild(msgDiv);
+      ktalkBox.scrollTop = ktalkBox.scrollHeight;
+    }
+
+    // 답이 없자 몇 분(연출상 5초) 후 연속 톡
+    await sleep(5000);
+    const followUpMsgs = ['답 안 해 줄 거야...? ㅠㅠㅠㅠㅠ', '지훈아ㅏㅏ', '지훈아아ㅏㅇ', '한지훈우누운ㄴ'];
+    for(let text of followUpMsgs) {
+      await sleep(1200);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg recv';
+      msgDiv.innerText = text;
+      ktalkBox.appendChild(msgDiv);
+      ktalkBox.scrollTop = ktalkBox.scrollHeight;
+    }
+
+    /* 3. 30초 후 Meeting 어플 알림 연출 */
+    await sleep(30000);
+    triggerPushNotification('Meeting', '이카루스', '안녕하세요.', 'meeting-screen');
+    startMeetingSequence();
+  }
+
+  /* Meeting 어플 대화 진행 시퀀스 */
+  async function startMeetingSequence() {
+    const meetingBox = document.getElementById('meeting-chat-box');
+    const conversation = [
+      { sender: 'recv', text: '안녕하세요.', name: '이카루스' },
+      { sender: 'send', text: '안녕하세요.', name: '한지훈' },
+      { sender: 'recv', text: '프본이세요?', name: '이카루스' },
+      { sender: 'send', text: '네네, 저 맞아요.', name: '한지훈' },
+      { sender: 'recv', text: '혹시 어디 사세요?', name: '이카루스' },
+      { sender: 'send', text: '저 경기도 쪽이요. 왜요?', name: '한지훈' },
+      { sender: 'recv', text: '지훈아.', name: '이카루스' },
+      { sender: 'recv', text: '형 연락은 안 보면서 이카루스한텐 답장 잘 하네?', name: '이카루스' },
+      { sender: 'send', text: '...네?', name: '한지훈' }
+    ];
+
+    for(let msg of conversation) {
+      await sleep(2000);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${msg.sender}`;
+      if(msg.text.includes('형 연락은 안 보면서')) {
+        msgDiv.style.background = '#ff0055'; // 소름돋는 반전 모드 강조
+      }
+      msgDiv.innerText = msg.text;
+      meetingBox.appendChild(msgDiv);
+      meetingBox.scrollTop = meetingBox.scrollHeight;
+    }
+
+    /* 4. 5초 뒤 김도훈 카톡 최종 약속 메시지 */
+    await sleep(5000);
+    triggerPushNotification('카카오톡', '김도훈', '지훈아 내일 오후 8시 XX모텔 앞.', 'kakaotalk-screen');
+    
+    const ktalkBox = document.getElementById('ktalk-chat-box');
+    const finalMsgs = [
+      '지훈아',
+      '내일 오후 8시 XX모텔 앞.',
+      '어차피 이러려고 앱 깐 거잖아. 괜찮지?',
+      '내일 보자.'
+    ];
+
+    for(let text of finalMsgs) {
+      await sleep(1500);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg recv';
+      msgDiv.style.background = '#ffebee';
+      msgDiv.style.border = '1px solid #ffcdd2';
+      msgDiv.innerText = text;
+      ktalkBox.appendChild(msgDiv);
+      ktalkBox.scrollTop = ktalkBox.scrollHeight;
+    }
+  }
+</script>
+</body>
+</html>
