@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한지훈의 iPhone</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif; user-select: none; }
+    body { background-color: #1c1c1e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    
+    /* 아이폰 프레임 */
+    .iphone-device {
+      width: 375px; height: 812px; background: #000; border-radius: 50px;
+      position: relative; border: 12px solid #333; box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+      overflow: hidden; color: #fff;
+    }
+    .notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 160px; height: 30px; background: #000; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; z-index: 9999;
+    }
+    .status-bar {
+      position: absolute; top: 0; width: 100%; height: 44px; display: flex; justify-content: space-between;
+      align-items: center; padding: 0 24px; font-size: 14px; font-weight: 600; z-index: 9998;
+    }
+
+    /* 화면 스위칭 */
+    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; }
+    .screen.active { display: block; }
+
+    /* 1. 잠금 화면 */
+    #lock-screen {
+      background: linear-gradient(180deg, #2c3e50 0%, #000000 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 40px;
+    }
+    .lock-time { margin-top: 40px; text-align: center; }
+    .lock-time h1 { font-size: 72px; font-weight: 200; }
+    .lock-time p { font-size: 18px; opacity: 0.8; }
+    .unlock-btn {
+      background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+      padding: 12px 28px; border-radius: 25px; cursor: pointer; font-size: 15px; animation: bounce 2s infinite;
+    }
+
+    /* 2. 홈 화면 */
+    #home-screen { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 60px 20px 20px; }
+    .owner-tag { text-align: center; margin-bottom: 25px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 12px; display: inline-block; }
+    .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 15px; justify-items: center; }
+    .app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration: none; color: #fff; }
+    .app-box { width: 60px; height: 60px; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 28px; position: relative; }
+    .app-name { font-size: 11px; margin-top: 6px; text-align: center; }
+    
+    /* 앱 색상 */
+    .app-kakaotalk { background: #FEE500; color: #000; }
+    .app-instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); }
+    .app-photos { background: #fff; color: #000; }
+    .app-phone { background: #34C759; }
+    .app-notes { background: #FFCC00; color: #000; }
+    .app-messages { background: #34C759; }
+    .app-meeting { background: linear-gradient(45deg, #ff007f, #7f00ff); font-weight: bold; font-size: 14px; }
+    
+    .badge { position: absolute; top: -4px; right: -4px; background: #FF3B30; color: white; border-radius: 10px; padding: 2px 6px; font-size: 11px; font-weight: bold; }
+
+    /* 공통 뒤로가기 헤더 */
+    .app-header { height: 44px; background: #1c1c1e; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; }
+    .back-btn { color: #0A84FF; cursor: pointer; font-size: 16px; font-weight: 500; }
+
+    /* 메모장 */
+    #notes-screen { background: #1c1c1e; color: #fff; }
+    .note-item { padding: 15px; border-bottom: 1px solid #333; }
+    .note-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #FFD60A; }
+    .note-body { font-size: 14px; white-space: pre-line; color: #ddd; line-height: 1.4; }
+
+    /* 앨범 그리드 (15장) */
+    #photos-screen { background: #000; height: 100%; overflow-y: auto; }
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      padding: 10px 5px 40px;
+    }
+    .album-item {
+      width: 100%;
+      height: 110px;
+      background: #2c2c2e;
+      overflow: hidden;
+    }
+    .album-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 메신저/앱 공통 대화창 */
+    .chat-container { height: calc(100% - 44px); display: flex; flex-direction: column; background: #b2c7da; color: #000; }
+    .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg { max-width: 70%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-break: break-all; }
+    .msg.recv { background: #fff; align-self: flex-start; border-top-left-radius: 2px; }
+    .msg.send { background: #FEE500; align-self: flex-end; border-top-right-radius: 2px; }
+    .sender-name { font-size: 11px; color: #555; margin-bottom: 3px; }
+
+    /* 인스타그램 */
+    #insta-screen { background: #000; color: #fff; }
+    .insta-story-box { padding: 15px; border-bottom: 1px solid #262626; text-align: center; }
+    .story-circle { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #d6249f; margin: 0 auto 8px; overflow: hidden; background: #333; }
+    .story-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Meeting 앱 */
+    #meeting-screen { background: #121212; color: #fff; }
+    .meeting-profile { display: flex; gap: 12px; padding: 15px; background: #1e1e1e; border-radius: 12px; margin: 10px; align-items: center; }
+    .meeting-avatar { width: 60px; height: 60px; border-radius: 50%; background: #333; overflow: hidden; }
+    .meeting-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .meeting-info h4 { font-size: 16px; color: #ff007f; }
+    .meeting-info p { font-size: 12px; color: #aaa; margin-top: 3px; }
+
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  </style>
+</head>
+<body>
+
+<div class="iphone-device">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>12:20</span>
+    <span>5G 🔋</span>
+  </div>
+
+  <!-- 1. 잠금화면 -->
+  <div id="lock-screen" class="screen active">
+    <div class="lock-time">
+      <p>11월 1일 일요일</p>
+      <h1>12:20</h1>
+    </div>
+    <div class="unlock-btn" onclick="showScreen('home-screen')">스와이프하여 열기</div>
+  </div>
+
+  <!-- 2. 홈화면 -->
+  <div id="home-screen" class="screen">
+    <div style="text-align: center;"><span class="owner-tag">📱 한지훈의 iPhone</span></div>
+    <div class="app-grid">
+      <div class="app-icon" onclick="showScreen('kakaotalk-screen')">
+        <div class="app-box app-kakaotalk">💬<span class="badge">2</span></div>
+        <span class="app-name">카카오톡</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('insta-screen')">
+        <div class="app-box app-instagram">📸</div>
+        <span class="app-name">Instagram</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('photos-screen')">
+        <div class="app-box app-photos">🖼️</div>
+        <span class="app-name">앨범</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('notes-screen')">
+        <div class="app-box app-notes">📝</div>
+        <span class="app-name">메모</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('meeting-screen')">
+        <div class="app-box app-meeting">🔥<span class="badge">1</span></div>
+        <span class="app-name">Meeting</span>
+      </div>
+      <div class="app-icon">
+        <div class="app-box app-phone">📞</div>
+        <span class="app-name">전화</span>
+      </div>
+      <div class="app-icon">
+        <div class="app-box app-messages">💬</div>
+        <span class="app-name">메시지</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 메모장 화면 -->
+  <div id="notes-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px;">메모</span></div>
+    <div class="note-item">
+      <div class="note-title">🛒 장보기 목록</div>
+      <div class="note-body">건면 칼국수!!!
+라라스윗 초코맛!!!</div>
+    </div>
+    <div class="note-item">
+      <div class="note-title">📌 일정</div>
+      <div class="note-body">11월 1일 환승연애 보기</div>
+    </div>
+    <div class="note-item">
+      <div class="note-title">🔤 English Voca</div>
+      <div class="note-body">abandon - 포기하다, 버리다
+vulnerable - 취약한
+unprecedented - 전례 없는
+ambiguous - 모호한</div>
+    </div>
+  </div>
+
+  <!-- 4. 사진 앨범 화면 (15장) -->
+  <div id="photos-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; font-weight:bold;">앨범</span></div>
+    <div class="album-grid">
+      <!-- 📌 이미지 주소를 각각 바꿔 넣으시면 됩니다 (1 ~ 15번) -->
+      <div class="album-item"><img src="https://pin.it/2DWRSGcDC" alt="사진1"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/611363718201060673/" alt="사진2"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/748793875572953078/" alt="사진3"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/760123243388587045/" alt="사진4"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/1059260774911494816/" alt="사진5"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/760123243402696228/" alt="사진6"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/1099863540275368207/" alt="사진7"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/1059260774911786512/" alt="사진8"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/582582901848141106/" alt="사진9"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/760123243401901189/" alt="사진10"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/760123243401901198/" alt="사진11"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/724516658843572907/" alt="사진12"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/87960998967221260/" alt="사진13"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/870813277944638368/" alt="사진14"></div>
+      <div class="album-item"><img src="https://kr.pinterest.com/pin/874120608928071609/" alt="사진15"></div>
+    </div>
+  </div>
+
+  <!-- 5. 인스타그램 화면 (한지성 스토리) -->
+  <div id="insta-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px;">Instagram</span></div>
+    <div class="insta-story-box">
+      <div class="story-circle">
+        <!-- 📌 한지성 스토리 속 지훈 사진 -->
+        <img id="story-img" src="https://kr.pinterest.com/pin/874120608928071609/" alt="지훈 사진">
+      </div>
+      <p style="font-size: 13px;">han_js (한지성)</p>
+      <p style="font-size: 11px; color: #888; margin-top: 4px;">스토리에 지훈 사진 게시됨</p>
+    </div>
+  </div>
+
+  <!-- 6. 카카오톡 대화 화면 -->
+  <div id="kakaotalk-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px;">카카오톡</span></div>
+    <div class="chat-container">
+      <div class="chat-messages">
+        <!-- 한지성 대화 -->
+        <div class="sender-name">한지성 (친형)</div>
+        <div class="msg send">ㅇㄷ</div>
+        <div class="msg recv">나 지금 친구 집</div>
+        <div class="msg send">또 여친 집에서 자고 오겠네예</div>
+        <div class="msg recv">쉿</div>
+        <div style="text-align: center; font-size: 11px; color: #666; margin: 5px 0;">다음 날</div>
+        <div class="msg recv">야 한지훈</div>
+        <div class="msg send">ㅇㅇ</div>
+        <div class="msg recv">너 혹시 니 초6때 만난 김도훈 기억하냐</div>
+        <div class="msg send">그 피부 까만 잘생긴 형?</div>
+        <div class="msg recv">언제는 못생겼다더니</div>
+        <div class="msg send">암튼 그 형 왜</div>
+        <div class="msg recv">김도훈이 나 얼마전에 너랑 강남 간 거 스토리 올렸잖<br>그거 보고 김도훈이 너 왤케 컸냐면서 같이 나중에 술 한 잔 하자는데<br>ㅇㄸ 김도훈이 사 준대.</div>
+        <div class="msg send">ㄴㄴㄴㄴㄴㄴㄴㄴ 절대 안 돼<br>절대 네버 싫어<br>진짜 싫어 나 술 못 마신다 그래 얼른</div>
+        <div class="msg recv">지훈아, 형이 그렇게 싫어?</div>
+
+        <hr style="border:0; border-top:1px dashed #aaa; margin: 15px 0;">
+
+        <!-- 김도훈 대화 -->
+        <div style="display:flex; align-items:center; gap:8px;">
+          <!-- 📌 김도훈 프사 -->
+          <img id="dohoon-pfp" src="https://kr.pinterest.com/pin/857724691578888139/" style="width:30px; height:30px; border-radius:50%;">
+          <div class="sender-name" style="margin:0;">김도훈</div>
+        </div>
+        <div class="msg recv">지훈아아</div>
+        <div class="msg recv">나 도훈이 형이야.</div>
+        <div class="msg recv">못 본 새에 많이 컸네~</div>
+        <div class="msg recv" style="margin-top: 5px;">답 안 해 줄 거야...? ㅠㅠㅠㅠㅠ</div>
+        <div class="msg recv">지훈아ㅏㅏ</div>
+        <div class="msg recv">지훈아아ㅏㅇ</div>
+        <div class="msg recv">한지훈우누운ㄴ</div>
+        <div class="msg recv" style="background:#ffebee; border:1px solid #ffcdd2;">지훈아<br>내일 오후 8시 XX모텔 앞.<br>어차피 이러려고 앱 깐 거잖아. 괜찮지?<br>내일 보자.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. 게이 만남 어플 (Meeting) -->
+  <div id="meeting-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; color:#ff007f; font-weight:bold;">Meeting</span></div>
+    
+    <div class="meeting-profile">
+      <div class="meeting-avatar">
+        <!-- 📌 이카루스 프사 -->
+        <img id="icarus-pfp" src="https://kr.pinterest.com/pin/760123243401903231/" alt="이카루스">
+      </div>
+      <div class="meeting-info">
+        <h4>이카루스</h4>
+        <p>24세 / 181cm / 탑(Top)</p>
+      </div>
+    </div>
+
+    <div class="chat-container" style="background: #1a1a1a;">
+      <div class="chat-messages">
+        <div class="msg recv" style="background:#333; color:#fff;">안녕하세요.</div>
+        <div class="msg send" style="background:#ff007f; color:#fff;">안녕하세요.</div>
+        <div class="msg recv" style="background:#333; color:#fff;">프본이세요?</div>
+        <div class="msg send" style="background:#ff007f; color:#fff;">네네, 저 맞아요.</div>
+        <div class="msg recv" style="background:#333; color:#fff;">혹시 어디 사세요?</div>
+        <div class="msg send" style="background:#ff007f; color:#fff;">저 경기도 쪽이요.</div>
+        <div class="msg recv" style="background:#551a8b; color:#fff; font-weight:bold;">지훈아.</div>
+        <div class="msg recv" style="background:#551a8b; color:#fff; font-weight:bold;">형 연락은 안 보면서 이카루스한텐 답장 잘 하네?</div>
+        <div class="msg send" style="background:#ff007f; color:#fff;">...네?</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showScreen(screenId) {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  }
+</script>
+</body>
+</html>
