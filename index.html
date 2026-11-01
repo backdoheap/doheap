@@ -26,7 +26,7 @@
     /* 푸시 알림 팝업 */
     .notification {
       position: absolute; top: -100px; left: 12px; right: 12px; background: rgba(30, 30, 30, 0.95);
-      backdrop-filter: blur(15px); border-radius: 16px; padding: 12px 16px; z-index: 10000;
+      backdrop-filter: blur(15px); border-radius: 16px; padding: 12px 16px; z-index: 30000;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer; transition: all 0.5s ease;
       border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 4px;
     }
@@ -36,8 +36,8 @@
     .noti-body { font-size: 13px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* 화면 스위칭 시스템 */
-    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; z-index: 10; }
-    .screen.active { display: flex; flex-direction: column; z-index: 20; }
+    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; flex-direction: column; z-index: 100; }
+    .screen.active { display: flex; z-index: 200; }
 
     /* 1. 잠금 화면 */
     #lock-screen {
@@ -109,9 +109,6 @@
     #story-viewer { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:20000; flex-direction:column; }
     #story-viewer img { width:100%; height: calc(100% - 60px); object-fit: cover; margin-top: 20px; }
 
-    /* 인스타 디엠 화면 */
-    #insta-dm-screen { background: #000; }
-
     /* 공통 채팅 메신저 스타일 */
     .chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #000; }
     .msg { max-width: 70%; padding: 8px 12px; border-radius: 16px; font-size: 13px; line-height: 1.4; word-break: break-all; }
@@ -125,7 +122,6 @@
     .typing-indicator { font-size: 11px; color: #888; font-style: italic; padding: 4px 8px; }
 
     /* Meeting 앱 */
-    #meeting-screen { background: #121212; }
     .meeting-header { padding: 12px; background: #1e1e1e; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; flex-shrink: 0; }
     .meeting-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
     .meeting-info h4 { font-size: 14px; color: #ff007f; }
@@ -276,7 +272,7 @@ ambiguous - 모호한</div>
   <!-- 인스타 스토리 팝업 -->
   <div id="story-viewer">
     <div class="app-header"><span class="back-btn" onclick="closeStory()">✕ 닫기</span><span style="margin-left:15px;">han_js의 스토리</span></div>
-    <img id="hanjs-story-img" src="https://cdn.phototourl.com/member/2026-11-01-c8c41f1e-61eb-48b4-80be-ffe8b9a8b9ed.jpg" alt="한지성 스토리">
+    <img id="hanjs-story-img" src="https://via.placeholder.com/350x500/d6249f/fff?text=%ED%95%9C%EC%A7%80%EC%84%B1+%EC%8A%A4%ED%86%A0%EB%A6%AC+%EC%82%AC%EC%A7%84" alt="한지성 스토리">
   </div>
 
   <!-- 6. 인스타 디엠 화면 -->
@@ -294,17 +290,17 @@ ambiguous - 모호한</div>
   <div id="kakaotalk-screen" class="screen">
     <div class="app-header">
       <span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span>
-      <img id="dohoon-pfp" src="https://cdn.phototourl.com/member/2026-11-01-d1b0ff7c-fa90-462e-b306-ef1f0df8b9f7.jpg" style="width:28px; height:28px; border-radius:50%; margin-left:10px;">
+      <img id="dohoon-pfp" src="https://via.placeholder.com/30/ff8b94/fff?text=%EB%8F%84%ED%9B%88" style="width:28px; height:28px; border-radius:50%; margin-left:10px;">
       <span style="margin-left:8px; font-weight:bold; color:#000;">김도훈</span>
     </div>
     <div class="chat-box kakao-chat" id="ktalk-chat-box"></div>
   </div>
 
   <!-- 8. Meeting 어플 화면 -->
-  <div id="meeting-screen" class="screen">
+  <div id="meeting-screen" class="screen" style="background: #121212;">
     <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; color:#ff007f; font-weight:bold;">Meeting</span></div>
     <div class="meeting-header">
-      <img id="icarus-pfp" src="https://cdn.phototourl.com/member/2026-11-01-9a5ed29e-da22-4bc4-b06f-9d2df3efce4c.jpg" alt="이카루스">
+      <img id="icarus-pfp" src="https://via.placeholder.com/45/7f00ff/fff?text=%EC%9D%B4%EC%B9%B4%EB%A3%88%EC%8A%A4" alt="이카루스">
       <div class="meeting-info">
         <h4>이카루스</h4>
         <p>24세 / 181cm / 탑(Top)</p>
