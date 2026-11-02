@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이경민의 iPhone</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif; user-select: none; }
+    body { background-color: #121212; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #fff; }
+
+    /* 아이폰 프레임 */
+    .iphone-device {
+      width: 375px; height: 812px; background: #000; border-radius: 48px;
+      position: relative; border: 10px solid #2d2d2d; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+    .notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 150px; height: 28px; background: #000; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 9999;
+    }
+    .status-bar {
+      position: absolute; top: 0; width: 100%; height: 44px; display: flex; justify-content: space-between;
+      align-items: center; padding: 0 24px; font-size: 13px; font-weight: 600; z-index: 9998; background: rgba(0,0,0,0.2);
+    }
+
+    /* 푸시 알림 팝업 */
+    .notification {
+      position: absolute; top: -100px; left: 12px; right: 12px; background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(15px); border-radius: 16px; padding: 12px 16px; z-index: 30000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer; transition: all 0.5s ease;
+      border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 4px;
+    }
+    .notification.show { top: 50px; }
+    .noti-header { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; }
+    .noti-title { font-weight: bold; font-size: 13px; color: #fff; }
+    .noti-body { font-size: 13px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 화면 스위칭 시스템 */
+    .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #000; padding-top: 44px; flex-direction: column; z-index: 100; }
+    .screen.active { display: flex; z-index: 200; }
+
+    /* 1. 잠금 화면 */
+    #lock-screen {
+      background: linear-gradient(180deg, #1c2a38 0%, #000 100%);
+      justify-content: space-between; align-items: center; padding-bottom: 50px;
+    }
+    .lock-time { margin-top: 50px; text-align: center; }
+    .lock-time h1 { font-size: 72px; font-weight: 200; }
+    .lock-time p { font-size: 18px; opacity: 0.8; }
+    .unlock-btn {
+      background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+      padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 14px; animation: bounce 2s infinite;
+    }
+
+    /* 2. 홈 화면 */
+    #home-screen { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); padding: 60px 20px 20px; }
+    .owner-tag { text-align: center; margin-bottom: 25px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 12px; display: inline-block; width: 100%; }
+    .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 15px; justify-items: center; }
+    .app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration: none; color: #fff; }
+    .app-box { width: 58px; height: 58px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 26px; position: relative; }
+    .app-name { font-size: 11px; margin-top: 6px; text-align: center; }
+    
+    .app-kakaotalk { background: #FEE500; color: #000; }
+    .app-instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); }
+    .app-photos { background: #fff; color: #000; }
+    .app-phone { background: #34C759; }
+    .app-notes { background: #FFCC00; color: #000; }
+    .app-messages { background: #34C759; }
+    .app-meeting { background: linear-gradient(45deg, #ff007f, #7f00ff); font-weight: bold; font-size: 13px; }
+    
+    .badge { position: absolute; top: -3px; right: -3px; background: #FF3B30; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: bold; }
+
+    /* 공통 헤더 */
+    .app-header { height: 44px; background: #1c1c1e; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; flex-shrink: 0; }
+    .back-btn { color: #0A84FF; cursor: pointer; font-size: 15px; font-weight: 500; }
+
+    /* 3. 메모장 */
+    #notes-screen { background: #1c1c1e; overflow-y: auto; }
+    .note-item { padding: 15px; border-bottom: 1px solid #333; }
+    .note-title { font-weight: bold; font-size: 15px; margin-bottom: 5px; color: #FFD60A; }
+    .note-body { font-size: 13px; white-space: pre-line; color: #ddd; line-height: 1.5; }
+
+    /* 4. 사진 앨범 (15장) */
+    #photos-screen { background: #000; overflow-y: auto; }
+    .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 5px 0 40px; }
+    .album-item { width: 100%; height: 120px; background: #222; }
+    .album-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* 5. 인스타그램 홈 */
+    #insta-screen { background: #000; overflow-y: auto; }
+    .insta-nav { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #222; flex-shrink: 0; }
+    .insta-logo { font-weight: bold; font-size: 18px; font-family: sans-serif; }
+    .insta-stories { display: flex; gap: 15px; padding: 10px 15px; border-bottom: 1px solid #222; overflow-x: auto; flex-shrink: 0; }
+    .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .story-ring { width: 56px; height: 56px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .story-ring img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #000; object-fit: cover; }
+    .story-name { font-size: 10px; margin-top: 4px; color: #ccc; }
+    
+    .insta-feed { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+    .post { border-bottom: 1px solid #222; margin-bottom: 15px; }
+    .post-header { display: flex; align-items: center; padding: 10px; gap: 10px; }
+    .post-header img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .post-header span { font-size: 12px; font-weight: 600; }
+    .post-imgs { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+    .post-imgs img { width: 100%; height: 300px; flex-shrink: 0; object-fit: cover; scroll-snap-align: start; }
+    .post-caption { padding: 10px; font-size: 12px; line-height: 1.4; }
+
+    /* 인스타 스토리 팝업 뷰어 */
+    #story-viewer { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:20000; flex-direction:column; }
+    #story-viewer img { width:100%; height: calc(100% - 60px); object-fit: cover; margin-top: 20px; }
+
+    /* 공통 채팅 메신저 스타일 */
+    .chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #000; }
+    .msg { max-width: 70%; padding: 8px 12px; border-radius: 16px; font-size: 13px; line-height: 1.4; word-break: break-all; }
+    .msg.recv { background: #262626; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.send { background: #3797F0; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    
+    .kakao-chat { background: #abc1d1; }
+    .kakao-chat .msg.recv { background: #fff; color: #000; border-bottom-left-radius: 2px; }
+    .kakao-chat .msg.send { background: #FEE500; color: #000; border-bottom-right-radius: 2px; }
+
+    .typing-indicator { font-size: 11px; color: #888; font-style: italic; padding: 4px 8px; }
+
+    /* Meeting 앱 */
+    .meeting-header { padding: 12px; background: #1e1e1e; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; flex-shrink: 0; }
+    .meeting-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+    .meeting-info h4 { font-size: 14px; color: #ff007f; }
+    .meeting-info p { font-size: 11px; color: #aaa; }
+
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  </style>
+</head>
+<body>
+
+<div class="iphone-device">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>12:20</span>
+    <span>5G 🔋</span>
+  </div>
+
+  <!-- 푸시 알림 팝업 -->
+  <div id="push-noti" class="notification" onclick="handleNotificationClick()">
+    <div class="noti-header"><span id="noti-app-name">카카오톡</span><span>방금 전</span></div>
+    <div class="noti-title" id="noti-sender">신정환</div>
+    <div class="noti-body" id="noti-text">알림 내용이 들어갑니다.</div>
+  </div>
+
+  <!-- 1. 잠금화면 -->
+  <div id="lock-screen" class="screen active">
+    <div class="lock-time">
+      <p>11월 1일 일요일</p>
+      <h1>12:20</h1>
+    </div>
+    <div class="unlock-btn" onclick="showScreen('home-screen')">스와이프하여 열기</div>
+  </div>
+
+  <!-- 2. 홈화면 -->
+  <div id="home-screen" class="screen">
+    <span class="owner-tag">📱 이경민의 iPhone</span>
+    <div class="app-grid">
+      <div class="app-icon" onclick="showScreen('kakaotalk-screen')">
+        <div class="app-box app-kakaotalk">💬<span class="badge" id="ktalk-badge" style="display:none;">1</span></div>
+        <span class="app-name">카카오톡</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('insta-screen')">
+        <div class="app-box app-instagram">📸</div>
+        <span class="app-name">Instagram</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('photos-screen')">
+        <div class="app-box app-photos">🖼️</div>
+        <span class="app-name">사진첩</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('notes-screen')">
+        <div class="app-box app-notes">📝</div>
+        <span class="app-name">메모</span>
+      </div>
+      <div class="app-icon" onclick="showScreen('meeting-screen')">
+        <div class="app-box app-meeting">🔥<span class="badge" id="meeting-badge" style="display:none;">1</span></div>
+        <span class="app-name">Meeting</span>
+      </div>
+      <div class="app-icon"><div class="app-box app-phone">📞</div><span class="app-name">전화</span></div>
+      <div class="app-icon"><div class="app-box app-messages">💬</div><span class="app-name">메시지</span></div>
+    </div>
+  </div>
+
+  <!-- 3. 메모장 -->
+  <div id="notes-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px;">메모장</span></div>
+    <div class="note-item">
+      <div class="note-title">🛒 장보기 목록</div>
+      <div class="note-body">건면 칼국수!!!
+라라스윗 초코맛!!!</div>
+    </div>
+    <div class="note-item">
+      <div class="note-title">📌 일정</div>
+      <div class="note-body">11월 1일 환승연애 보기</div>
+    </div>
+    <div class="note-item">
+      <div class="note-title">🔤 영어 단어</div>
+      <div class="note-body">abandon - 포기하다
+vulnerable - 취약한
+unprecedented - 전례 없는
+ambiguous - 모호한</div>
+    </div>
+  </div>
+
+  <!-- 4. 사진첩 (15장) -->
+  <div id="photos-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; font-weight:bold;">사진첩 (15)</span></div>
+    <div class="album-grid">
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/0c27f9d1-ea7a-443a-ac4e-1281962c6e79.jpg" alt="사진1"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/f8e079f6-b083-4344-9e1d-9efbae6b4f0d.jpg" alt="사진2"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/77c40668-5520-4ede-a207-3c4703182af6.jpg" alt="사진3"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/a201e76a-5e47-438f-96ab-fe08cd76c5ed.jpg" alt="사진4"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/4705c7fb-85c6-4bf0-a864-eeb27b2699f3.jpg" alt="사진5"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/d5297016-16ee-40b7-ba80-61af0420b123.jpg" alt="사진6"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/8b11c341-907b-4455-9c7b-724694f3d62e.jpg" alt="사진7"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/9ed9d6cf-b7b6-427d-a959-fe302fa68532.jpg" alt="사진8"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/bce34b5a-b919-4402-a29b-4cbc20bd76fd.jpg" alt="사진9"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/c455af7f-07b7-4c63-92ac-5ae52b942d10.jpg" alt="사진10"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/40659d24-d401-420e-aa30-d19a6f66e615.jpg" alt="사진11"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/0932a69e-7a91-4346-8f68-44d39288574a.jpg" alt="사진12"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/e011ee04-5d27-4a86-8c7d-fb45e77f91c7.jpg" alt="사진13"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/668ef48d-6239-4229-8eb3-74b720a755af.jpg" alt="사진14"></div>
+      <div class="album-item"><img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/5f2e657d-b7f1-4f57-ac63-7965d917c09e.jpg" alt="사진15"></div>
+    </div>
+  </div>
+
+  <!-- 5. 인스타그램 홈 -->
+  <div id="insta-screen" class="screen">
+    <div class="insta-nav">
+      <span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span>
+      <span class="insta-logo">Instagram</span>
+      <span style="font-size: 20px; cursor: pointer;" onclick="showScreen('insta-dm-screen')">✈️</span>
+    </div>
+    <div class="insta-stories">
+      <div class="story-item" onclick="openStory()">
+        <div class="story-ring">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/2c61a43f-e3ee-49b9-9601-4cfc615261ed.jpg" alt="이지성">
+        </div>
+        <span class="story-name">Lee_js</span>
+      </div>
+    </div>
+    <div class="insta-feed">
+      <div class="post">
+        <div class="post-header">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/2c61a43f-e3ee-49b9-9601-4cfc615261ed.jpg">
+          <span>Lee_js (이지성)</span>
+        </div>
+        <div class="post-imgs">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/2c61a43f-e3ee-49b9-9601-4cfc615261ed.jpg">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/da07a685-56c1-468f-9437-9583934d1633.jpg">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/a6a1cd8c-d665-41cb-bedd-d03ff6b30187.jpg">
+        </div>
+        <div class="post-caption"><b>Lee_js</b> 경민이랑 2박 3일 📸</div>
+      </div>
+      <div class="post">
+        <div class="post-header">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/cd85e121-a848-4211-ba22-498c819319c2.jpg">
+          <span>ky_min (이경민)</span>
+        </div>
+        <div class="post-imgs">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/561d1daf-b24f-4eaf-9473-e3f1cf575828.jpg">
+          <img src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/d77a30bd-8483-4c49-b06c-30ca9272bcab.jpg">
+        </div>
+        <div class="post-caption"><b>ky_min</b> 봄이다ㅏ.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 인스타 스토리 팝업 -->
+  <div id="story-viewer">
+    <div class="app-header"><span class="back-btn" onclick="closeStory()">✕ 닫기</span><span style="margin-left:15px;">Lee_js의 스토리</span></div>
+    <img id="Leejs-story-img" src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/60f3a82d-9bd5-488a-8b46-d97f106dbe6e.jpg" alt="이지성 스토리">
+  </div>
+
+  <!-- 6. 인스타 디엠 화면 -->
+  <div id="insta-dm-screen" class="screen">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('insta-screen')">❮ 인스타</span><span style="margin-left:15px; font-weight:bold;">Lee_js</span></div>
+    <div class="chat-box" id="insta-dm-box">
+      <div class="msg send">ㅇㄷ</div>
+      <div class="msg recv">나 지금 친구 집</div>
+      <div class="msg send">또 여친 집에서 자고 오겠네</div>
+      <div class="msg recv">쉿</div>
+    </div>
+  </div>
+
+  <!-- 7. 카카오톡 화면 -->
+  <div id="kakaotalk-screen" class="screen">
+    <div class="app-header">
+      <span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span>
+      <img id="Jeonghwan-pfp" src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/0295073f-57d4-421c-9d36-5f7adbde77f5.jpg" style="width:28px; height:28px; border-radius:50%; margin-left:10px;">
+      <span style="margin-left:8px; font-weight:bold; color:#000;">신정환</span>
+    </div>
+    <div class="chat-box kakao-chat" id="ktalk-chat-box"></div>
+  </div>
+
+  <!-- 8. Meeting 어플 화면 -->
+  <div id="meeting-screen" class="screen" style="background: #121212;">
+    <div class="app-header"><span class="back-btn" onclick="showScreen('home-screen')">❮ 홈</span><span style="margin-left:15px; color:#ff007f; font-weight:bold;">Meeting</span></div>
+    <div class="meeting-header">
+      <img id="icarus-pfp" src="https://i.supaimg.com/b3fdb9c7-4308-4c52-bd3f-fc8ef06cdca9/adff084d-a4f7-41f8-b291-6724d0d7f7b8.jpg" alt="족제비">
+      <div class="meeting-info">
+        <h4>족제비</h4>
+        <p>24세 / 181cm / 탑(Top)</p>
+      </div>
+    </div>
+    <div class="chat-box" id="meeting-chat-box" style="background: #121212;"></div>
+  </div>
+
+</div>
+
+<script>
+  let targetScreenOnNoti = '';
+
+  function showScreen(screenId) {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+
+    if(screenId === 'insta-dm-screen' && !window.dmStarted) {
+      window.dmStarted = true;
+      startInstaDMSequence();
+    }
+  }
+
+  function openStory() {
+    document.getElementById('story-viewer').style.display = 'flex';
+  }
+  function closeStory() {
+    document.getElementById('story-viewer').style.display = 'none';
+  }
+
+  function triggerPushNotification(appName, sender, text, targetScreen) {
+    document.getElementById('noti-app-name').innerText = appName;
+    document.getElementById('noti-sender').innerText = sender;
+    document.getElementById('noti-text').innerText = text;
+    targetScreenOnNoti = targetScreen;
+
+    const noti = document.getElementById('push-noti');
+    noti.classList.add('show');
+
+    if(appName === '카카오톡') document.getElementById('ktalk-badge').style.display = 'block';
+    if(appName === 'Meeting') document.getElementById('meeting-badge').style.display = 'block';
+
+    setTimeout(() => { noti.classList.remove('show'); }, 4000);
+  }
+
+  function handleNotificationClick() {
+    if(targetScreenOnNoti) {
+      showScreen(targetScreenOnNoti);
+      document.getElementById('push-noti').classList.remove('show');
+    }
+  }
+
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+  async function startInstaDMSequence() {
+    const dmBox = document.getElementById('insta-dm-box');
+    await sleep(20000);
+
+    const conversation = [
+      { sender: 'recv', text: '야 이경민', name: '이지성' },
+      { sender: 'send', text: 'ㅇㅇ', name: '이경민' },
+      { sender: 'recv', text: '너 혹시 니 초6때 만난 신정환 기억하냐', name: '이지성' },
+      { sender: 'send', text: '그 피부 하얀 잘생긴 형?', name: '이경민' },
+      { sender: 'recv', text: '언제는 못생겼다더니', name: '이지성' },
+      { sender: 'send', text: '암튼 그 형 왜', name: '이경민' },
+      { sender: 'recv', text: '신정환이 나 얼마전에 너랑 벚꽃 보러 간 거 스토리 올렸잖', name: '이지성' },
+      { sender: 'recv', text: '그거 보고 신정환이 너 왤케 컸냐면서 같이 나중에 술 한 잔 하자는데', name: '이지성' },
+      { sender: 'recv', text: 'ㅇㄸ 신정환이 사 준대.', name: '이지성' },
+      { sender: 'send', text: 'ㄴㄴㄴㄴㄴㄴㄴㄴ 절대 안 돼', name: '이경민' },
+      { sender: 'send', text: '절대 네버 싫어', name: '이경민' },
+      { sender: 'send', text: '진짜 싫어 나 술 못 마신다 그래 얼른', name: '이경민' },
+      { sender: 'recv', text: '경만아, 형이 그렇게 싫어?', name: '이지성' }
+    ];
+
+    for (let msg of conversation) {
+      const typing = document.createElement('div');
+      typing.className = 'typing-indicator';
+      typing.innerText = `${msg.name}님이 입력 중...`;
+      dmBox.appendChild(typing);
+      dmBox.scrollTop = dmBox.scrollHeight;
+
+      await sleep(1500);
+      typing.remove();
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${msg.sender}`;
+      msgDiv.innerText = msg.text;
+      dmBox.appendChild(msgDiv);
+      dmBox.scrollTop = dmBox.scrollHeight;
+
+      await sleep(1000);
+    }
+
+    await sleep(5000);
+    triggerPushNotification('카카오톡', '신정환', '경민아아', 'kakaotalk-screen');
+    startKakaoTalkSequence();
+  }
+
+  async function startKakaoTalkSequence() {
+    const ktalkBox = document.getElementById('ktalk-chat-box');
+    const firstMsgs = ['경민아아', '나 정환이 형이야.', '못 본 새에 많이 컸네~'];
+
+    for(let text of firstMsgs) {
+      await sleep(1500);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg recv';
+      msgDiv.innerText = text;
+      ktalkBox.appendChild(msgDiv);
+      ktalkBox.scrollTop = ktalkBox.scrollHeight;
+    }
+
+    await sleep(5000);
+    const followUpMsgs = ['답 안 해 줄 거야...? ㅠㅠㅠㅠㅠ', '경민아ㅏㅏ', '경민아아ㅏㅇ', '이경미누우누운ㄴ'];
+    for(let text of followUpMsgs) {
+      await sleep(1200);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg recv';
+      msgDiv.innerText = text;
+      ktalkBox.appendChild(msgDiv);
+      ktalkBox.scrollTop = ktalkBox.scrollHeight;
+    }
+
+    await sleep(30000);
+    triggerPushNotification('Meeting', '족제비', '안녕하세요.', 'meeting-screen');
+    startMeetingSequence();
+  }
+
+  async function startMeetingSequence() {
+    const meetingBox = document.getElementById('meeting-chat-box');
+    const conversation = [
+      { sender: 'recv', text: '안녕하세요.', name: '족제비' },
+      { sender: 'send', text: '안녕하세요.', name: '이경민' },
+      { sender: 'recv', text: '프본이세요?', name: '족제비' },
+      { sender: 'send', text: '네네, 저 맞아요.', name: '이경민' },
+      { sender: 'recv', text: '혹시 어디 사세요?', name: '족제비' },
+      { sender: 'send', text: '저 경기도 쪽이요. 왜요?', name: '이경민' },
+      { sender: 'recv', text: '경민아.', name: '족제비' },
+      { sender: 'recv', text: '형 연락은 안 보면서 족제비한텐 답장 잘 하네?', name: '족제비' },
+      { sender: 'send', text: '...네?', name: '이경민' }
+    ];
+
+    for(let msg of conversation) {
+      await sleep(2000);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${msg.sender}`;
+      if(msg.text.includes('형 연락은 안 보면서')) {
+        msgDiv.style.background = '#ff0055';
+      }
+      msgDiv.innerText = msg.text;
+      meetingBox.appendChild(msgDiv);
+      meetingBox.scrollTop = meetingBox.scrollHeight;
+    }
+
+    await sleep(5000);
+    triggerPushNotification('카카오톡', '신정환', '경민아 내일 오후 8시 XX모텔 앞.', 'kakaotalk-screen');
+    
+    const ktalkBox = document.getElementById('ktalk-chat-box');
+    const finalMsgs = [
+      '경민아',
+      '내일 오후 8시 XX모텔 앞.',
+      '어차피 이러려고 앱 깐 거잖아. 괜찮지?',
+      '내일 보자.'
+    ];
+
+    for(let text of finalMsgs) {
+      await sleep(1500);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg recv';
+      msgDiv.style.background = '#ffebee';
+      msgDiv.style.border = '1px solid #ffcdd2';
+      msgDiv.innerText = text;
+      ktalkBox.appendChild(msgDiv);
+      ktalkBox.scrollTop = ktalkBox.scrollHeight;
+    }
+  }
+</script>
+</body>
+</html>
